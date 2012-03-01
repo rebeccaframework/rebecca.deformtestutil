@@ -1,4 +1,6 @@
 from peppercorn import START, END, MAPPING, SEQUENCE
+from zope.interface import implementer
+from .interfaces import ISerializable
 
 def start_mapping(name=None):
     if name:
@@ -23,7 +25,11 @@ def start_sequence(name=None):
         return (START, SEQUENCE)
 
 def serialize(value, name=None):
-    if isinstance(value, dict):
+    if ISerializable.providedBy(value):
+        s = value.serialize(name)
+        for x in s:
+            yield x 
+    elif isinstance(value, dict):
         if name is not None:
             yield start_mapping(name)
         for k, v in value.items():
@@ -43,3 +49,14 @@ def serialize(value, name=None):
             yield end_sequence(name)
     else:
         yield (name, value)
+
+
+@implementer(ISerializable)
+class WebTestFileUpload(object):
+
+    def __init__(self, filename, fp):
+        self.fp = fp
+        self.filename = filename
+
+    def serialize(self, name):
+        yield (name, self.filename, self.fp.read())

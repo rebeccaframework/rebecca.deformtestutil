@@ -11,5 +11,6 @@ setup(
         'peppercorn',
         'deform',
         'webtest',
+        'zope.interface',
     ],
 )
